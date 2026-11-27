@@ -1,15 +1,202 @@
+
 "use client";
+
 import { useEffect, useState } from "react";
 import type { FormEvent } from "react";
 import { PageIntro } from "@/components/SiteShell";
-type Post={id:string;author:string;message:string;createdAt:string};
-export default function DiscussionPage(){
- const [posts,setPosts]=useState<Post[]>([]);const [author,setAuthor]=useState("");const [message,setMessage]=useState("");const [status,setStatus]=useState("");const [error,setError]=useState("");const [busy,setBusy]=useState(false);
- async function load(){const r=await fetch("/api/discussion");const d=await r.json();setPosts(d.posts||[])}
- useEffect(()=>{load().catch(()=>setError("We couldn't load discussion posts. Please refresh."));},[]);
- async function submit(e:FormEvent){e.preventDefault();setStatus("");setError("");setBusy(true);try{const r=await fetch("/api/discussion",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({author,message})});const d=await r.json();if(!r.ok)throw new Error(d.error||"Unable to publish your post.");setPosts(current=>[d.post,...current]);setAuthor("");setMessage("");setStatus("Your post has been published.");}catch(err){setError(err instanceof Error?err.message:"Something went wrong.")}finally{setBusy(false)}}
- return <section className="page-main"><div className="page-container"><PageIntro kicker="THE GREEN ROOM" title="Community discussion" description="A place for members to exchange ideas, share announcements, and connect with the people behind the performances."/>
- <div className="stack"><form className="content-card" onSubmit={submit}><h2>Start a conversation</h2><div className="form-grid"><div className="field"><label htmlFor="post-author">Your name</label><input id="post-author" value={author} onChange={e=>setAuthor(e.target.value)} maxLength={60} placeholder="Name displayed with your post" required/></div><div className="field full"><label htmlFor="post-message">Your message</label><textarea id="post-message" value={message} onChange={e=>setMessage(e.target.value)} maxLength={3000} placeholder="Share an idea, ask a question, or leave an announcement…" required/></div></div><div className="form-actions"><button className="button button-dark" disabled={busy}>{busy?"Publishing…":"Publish post ↗"}</button><span className="muted-note">Please be considerate and respectful of fellow members.</span></div>{status&&<p className="success-panel">{status}</p>}{error&&<p className="error-panel">{error}</p>}</form>
- <div><p className="section-kicker">FROM THE COMMUNITY</p><h2 className="section-title" style={{fontSize:32,margin:"10px 0 20px"}}>Recent conversations</h2>{posts.length===0?<div className="empty-state"><div className="empty-symbol">❧</div><h3>No posts yet</h3><p>Check back later for conversations from our community. You can start the first one above.</p></div>:<div className="stack">{posts.map(p=><article className="post-card" key={p.id}><div className="post-head"><span className="post-author">{p.author}</span><time className="post-date">{new Date(p.createdAt).toLocaleString()}</time></div><p className="post-body">{p.message}</p></article>)}</div>}</div></div>
- </div></section>
+
+type Post = {
+  id: string;
+  author: string;
+  message: string;
+  createdAt: string;
+  canDelete?: boolean;
+};
+
+export default function DiscussionPage() {
+  const [posts, setPosts] = useState<Post[]>([]);
+  const [author, setAuthor] = useState("");
+  const [message, setMessage] = useState("");
+  const [status, setStatus] = useState("");
+  const [error, setError] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function load() {
+    const r = await fetch("/api/discussion");
+    const d = await r.json();
+    setPosts(d.posts || []);
+  }
+
+  useEffect(() => {
+    load().catch(() =>
+      setError("We couldn't load discussion posts. Please refresh.")
+    );
+  }, []);
+
+  async function submit(e: FormEvent) {
+    e.preventDefault();
+    setStatus("");
+    setError("");
+    setBusy(true);
+
+    try {
+      const r = await fetch("/api/discussion", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ author, message }),
+      });
+
+      const d = await r.json();
+
+      if (!r.ok) {
+        throw new Error(d.error || "Unable to publish your post.");
+      }
+
+      setPosts(current => [d.post, ...current]);
+      setAuthor("");
+      setMessage("");
+      setStatus("Your post has been published.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function deletePost(id: string) {
+    const confirmed = window.confirm(
+      "Are you sure you want to permanently delete this post?"
+    );
+
+    if (!confirmed) return;
+
+    setError("");
+    setStatus("");
+
+    try {
+      const r = await fetch("/api/discussion", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+
+      const d = await r.json();
+
+      if (!r.ok) {
+        throw new Error(d.error || "Unable to delete this post.");
+      }
+
+      setPosts(current => current.filter(post => post.id !== id));
+      setStatus("Your post has been deleted.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    }
+  }
+
+  return (
+    <section className="page-main">
+      <div className="page-container">
+        <PageIntro
+          kicker="THE GREEN ROOM"
+          title="Community discussion"
+          description="A place for members to exchange ideas, share announcements, and connect with the people behind the performances."
+        />
+
+        <div className="stack">
+          <form className="content-card" onSubmit={submit}>
+            <h2>Start a conversation</h2>
+
+            <div className="form-grid">
+              <div className="field">
+                <label htmlFor="post-author">Your name</label>
+                <input
+                  id="post-author"
+                  value={author}
+                  onChange={e => setAuthor(e.target.value)}
+                  maxLength={60}
+                  placeholder="Name displayed with your post"
+                  required
+                />
+              </div>
+
+              <div className="field full">
+                <label htmlFor="post-message">Your message</label>
+                <textarea
+                  id="post-message"
+                  value={message}
+                  onChange={e => setMessage(e.target.value)}
+                  maxLength={3000}
+                  placeholder="Share an idea, ask a question, or leave an announcement…"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="form-actions">
+              <button className="button button-dark" disabled={busy}>
+                {busy ? "Publishing…" : "Publish post ↗"}
+              </button>
+
+              <span className="muted-note">
+                Please be considerate and respectful of fellow members.
+              </span>
+            </div>
+
+            {status && <p className="success-panel">{status}</p>}
+            {error && <p className="error-panel">{error}</p>}
+          </form>
+
+          <div>
+            <p className="section-kicker">FROM THE COMMUNITY</p>
+
+            <h2
+              className="section-title"
+              style={{ fontSize: 32, margin: "10px 0 20px" }}
+            >
+              Recent conversations
+            </h2>
+
+            {posts.length === 0 ? (
+              <div className="empty-state">
+                <div className="empty-symbol">❧</div>
+                <h3>No posts yet</h3>
+                <p>
+                  Check back later for conversations from our community.
+                  You can start the first one above.
+                </p>
+              </div>
+            ) : (
+              <div className="stack">
+                {posts.map(p => (
+                  <article className="post-card" key={p.id}>
+                    <div className="post-head">
+                      <span className="post-author">{p.author}</span>
+
+                      <time className="post-date">
+                        {new Date(p.createdAt).toLocaleString()}
+                      </time>
+                    </div>
+
+                    <p className="post-body">{p.message}</p>
+
+                    {p.canDelete && (
+                      <div className="form-actions">
+                        <button
+                          type="button"
+                          className="button-link"
+                          onClick={() => deletePost(p.id)}
+                        >
+                          Delete my post
+                        </button>
+                      </div>
+                    )}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
 }

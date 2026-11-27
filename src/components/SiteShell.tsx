@@ -32,6 +32,9 @@ export function SiteFooter() {
     <div className="footer-links">{links.slice(1).map(([label, href]) => <Link key={href} href={href}>{label}</Link>)}</div>
     <small>✦ &nbsp; CREATIVITY · COMMUNITY · PERFORMANCE &nbsp; ✦</small>
     <small className="copyright">© {new Date().getFullYear()} YB Performing Arts. All rights reserved.</small>
+    <small className="footer-credit">
+  Created by Keya Patel | keyapatel0324@gmail.com
+</small>
   </footer>;
 }
 
