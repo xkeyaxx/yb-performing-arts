@@ -1,0 +1,35 @@
+{
+  "events": [
+    {
+      "id": "d66eb195-2ad5-4283-8d4f-aeb63c0eb7b9",
+      "title": "Workshop THIS FRIDAY!!",
+      "date": "2026-12-04",
+      "description": "Come join us!!",
+      "category": "Workshop",
+      "time": "15:00",
+      "location": "Rm 610",
+      "price": "Free",
+      "createdAt": "2026-11-27T00:51:54.794Z"
+    },
+    {
+      "id": "a7ef92fc-fc58-44e5-96b6-133030eae424",
+      "title": "Play",
+      "date": "2027-03-27",
+      "description": "Come watch our play of Pride & Prejudice!",
+      "category": "Performance",
+      "time": "18:00",
+      "location": "YB Theater",
+      "price": "12",
+      "createdAt": "2026-11-27T00:55:10.083Z"
+    }
+  ],
+  "posts": [
+    {
+      "id": "fe5b109d-06af-4819-ba16-f9a1041981f1",
+      "author": "keya",
+      "message": "hi",
+      "createdAt": "2026-11-27T00:50:27.761Z"
+    }
+  ],
+  "reservations": []
+}
